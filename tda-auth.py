@@ -133,12 +133,12 @@ if tokens['access_token'] != None:
     else:
         sys.exit(1)
 
-httpd = HTTPServer((config['HOST'], config['PORT']), TDAmeritradeHandler)
-
-#SSL cert
-httpd.socket = ssl.wrap_socket (httpd.socket, 
-        keyfile='key.pem', 
-        certfile='certificate.pem', server_side=True)
-
-webbrowser.open_new("https://auth.tdameritrade.com/auth?response_type=code&redirect_uri="+redirect_uri_encoded+"&client_id="+client_id)
-httpd.handle_request()
+try:
+    httpd = HTTPServer((config['HOST'], config['PORT']), TDAmeritradeHandler)
+    httpd.socket = ssl.wrap_socket (httpd.socket, keyfile='key.pem', certfile='certificate.pem', server_side=True)
+    webbrowser.open_new("https://auth.tdameritrade.com/auth?response_type=code&redirect_uri="+redirect_uri_encoded+"&client_id="+client_id)
+    httpd.handle_request()
+except PermissionError:
+    print("Unable to bind "+config['HOST']+":"+str(config['PORT'])+" with current permissions. (Try 'sudo ./tda-auth.py')")
+except:
+    print("Unknown error.")
