@@ -27,7 +27,7 @@
 #
 
 import sys
-import os.path
+import os
 import json
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -42,8 +42,6 @@ if not os.path.isfile('certificate.pem') or not os.path.isfile('key.pem'):
     print("openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem")
     print("")
     sys.exit(1)
-
-sys.exit(1)
 
 config = { 'API_KEY' : "",
            'OAUTH'   : "AMER.OAUTHAP",
@@ -126,6 +124,15 @@ class TDAmeritradeHandler(BaseHTTPRequestHandler):
                 token_file.close()       
             self.wfile.write(authReply.text.encode())
 
+if tokens['access_token'] != None:
+    update_tokens()
+    temp = tokens
+    temp.setdefault('error', [None])
+    if temp['error'] == "invalid_grant":
+        os.remove(auth_filename)
+    else:
+        sys.exit(1)
+
 httpd = HTTPServer((config['HOST'], config['PORT']), TDAmeritradeHandler)
 
 #SSL cert
@@ -133,8 +140,5 @@ httpd.socket = ssl.wrap_socket (httpd.socket,
         keyfile='key.pem', 
         certfile='certificate.pem', server_side=True)
 
-if tokens['access_token'] == None:
-    webbrowser.open_new("https://auth.tdameritrade.com/auth?response_type=code&redirect_uri="+redirect_uri_encoded+"&client_id="+client_id)
-    httpd.handle_request()
-else:
-    update_tokens()
+webbrowser.open_new("https://auth.tdameritrade.com/auth?response_type=code&redirect_uri="+redirect_uri_encoded+"&client_id="+client_id)
+httpd.handle_request()
