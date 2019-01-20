@@ -23,3 +23,6 @@
 #
 # Code based on example code here.
 # https://developer.tdameritrade.com/content/web-server-authentication-python-3
+#
+# On systems that restrict port < 1024 you may need to 'sudo ./tda-auth.py'
+#
