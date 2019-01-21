@@ -8,7 +8,7 @@
 #
 # openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
 #
-# The if you don't have tokens this is will open a browser for you to login into your account.
+# The if you don't have tokens this will open a browser for you to login into your account.
 # TD Ameritrade will pass the tokens back to the local HTTPS Server via your browser.
 # It's normal to get a security warning from your browser, just accept the certficate you created.
 # The tokens will be saved in 'tokens.json'
