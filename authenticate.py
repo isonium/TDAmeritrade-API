@@ -174,6 +174,8 @@ def forever():
             t = threading.Timer(tokens['expires_in']/20, forever)
             t.start()
             t.join()
-
-if sys.argv[1] is not None:
-    if sys.argv[1] == 'forever': forever()
+try:
+    if sys.argv[1] is not None:
+        if sys.argv[1] == 'forever': forever()
+except:
+    pass
