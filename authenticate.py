@@ -4,14 +4,22 @@
 # It assumes an IP of 127.0.0.1 and PORT 443, but you can edit 'config.json' once created.
 #
 # You must first generate SSL certficates for the HTTPS server.
+#
 # openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
 #
-# The first time you run this is will open a browser for you to login into your account.
-# TD Ameritrade will pass the tokens back to the local HTTPS Server.
-# The tokens will be saved in 'auth.json'
+# The if you don't have tokens this is will open a browser for you to login into your account.
+# TD Ameritrade will pass the tokens back to the local HTTPS Server via your browser.
+# It's normal to get a security warning from your browser, just accept the certficate you created.
+# The tokens will be saved in 'tokens.json'
 #
-# Running again will use the refresh token in auth.json to get new tokens.
-# You will not need to login again unless your refresh token expires or is invalidated.
+# Running again will use the refresh token in auth.json to get new tokens if less than
+# six minutes remain.
+#
+# You will not need to login again unless your refresh token is expired or is invalidated.
+#
+# To keep your tokens.json file updated will valid tokens run.
+#
+# ./authenticate.py forever 
 #
 # The code is not the best, but it works.
 #
@@ -23,13 +31,16 @@
 # Code based on example code here.
 # https://developer.tdameritrade.com/content/web-server-authentication-python-3
 #
-# On systems that restrict port < 1024 you may need to 'sudo ./gettokens.py' 
+# On systems that restrict port < 1024 you may need to use 'sudo ./athenticate.py' or equivalent. 
+#
+# Requires sys, os, time, json, threading, webbrowser, http.server, urllib.parse, requests, and ssl modules.
 #
 
 import sys
 import os
 import time
 import json
+import threading
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs, quote_plus
@@ -103,11 +114,11 @@ class TDAmeritradeHandler(BaseHTTPRequestHandler):
         global client_id
         global redirect_uri
         global auth_filename
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
-        data = { 'grant_type': 'refresh_token', 'refresh_token': tokens['refresh_token'], 'access_type': 'offline', 'code': '', 'client_id': client_id, 'redirect_uri': redirect_uri }
-        authReply = requests.post('https://api.tdameritrade.com/v1/oauth2/token', headers=headers, data=data)
-        write_tokens(authReply.text)
-        return authReply.text
+        if time.time() > tokens['grant_time']+tokens['expires_in']/5*4:
+            headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
+            data = { 'grant_type': 'refresh_token', 'refresh_token': tokens['refresh_token'], 'access_type': 'offline', 'code': '', 'client_id': client_id, 'redirect_uri': redirect_uri }
+            authReply = requests.post('https://api.tdameritrade.com/v1/oauth2/token', headers=headers, data=data)
+            write_tokens(authReply.text)
 
     def do_GET(self):
         self._set_headers()
@@ -145,6 +156,24 @@ if start_server:
         httpd.handle_request()
     except PermissionError:
         print("Unable to bind "+config['HOST']+":"+str(config['PORT'])+" with current permissions. (Try 'sudo ./tda-auth.py')")
+        sys.exit(0)
     except:
         print("Unknown error.")
+        sys.exit(0)
 
+def forever():
+    if tokens['access_token'] != None:
+        update_tokens()
+        temp = tokens
+        temp.setdefault('error', [None])
+        if temp['error'] == "invalid_grant":
+            print ("Timer Abort: 'invalid_grant'")
+            sys.exit(0)
+        else:
+            update_tokens()
+            t = threading.Timer(tokens['expires_in']/20, forever)
+            t.start()
+            t.join()
+
+if sys.argv[1] is not None:
+    if sys.argv[1] == 'forever': forever()
