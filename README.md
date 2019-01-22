@@ -1,5 +1,5 @@
 # TDAmeritrade-API
-# Python 3 OATH Authentication for TD Ameritrade's API
+# Python 3 OAUTH Authentication for TD Ameritrade's API
 
  This will ask for your API Key the first time you run it and create a config.json
  It assumes an IP of 127.0.0.1 and PORT 443, but you can edit 'config.json' once created.
