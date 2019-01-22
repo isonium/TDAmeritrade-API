@@ -36,10 +36,7 @@
 # Requires sys, os, time, json, threading, webbrowser, http.server, urllib.parse, requests, and ssl modules.
 #
 
-import sys
-import os
-import time
-import json
+import sys, os, time, json
 import threading
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
