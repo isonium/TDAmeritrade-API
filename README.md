@@ -1,6 +1,6 @@
 # TDAmeritrade-API
 # Python 3 OAUTH Authentication for TD Ameritrade's API
-# Only Linux and Mac are supported, Windows 10 support is problematic.
+# Only Linux and Mac are supported, Windows 10 support is problematic (but being looked at.)
 
  This will ask for your API Key the first time you run it and create a config.json
  It assumes an IP of 127.0.0.1 and PORT 443, but you can edit 'config.json' once created.
